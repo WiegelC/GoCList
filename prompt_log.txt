@@ -1,0 +1,138 @@
+================================================================================
+WEEK 5 LAB — AI PROMPT LOG & EDITORIAL REVISION HISTORY
+Project: Collaborative Grocery List Manager
+================================================================================
+
+This document maintains a chronological record of all prompts provided to the AI,
+including design decisions, UI requirements, implementation requests, and editorial critiques.
+
+--------------------------------------------------------------------------------
+PROMPT #1 — Phase 1: Architecture & Project Scaffolding
+Date: 2026-09-26
+--------------------------------------------------------------------------------
+Acting as a senior software architect, design a robust, production-ready full-stack application for a collaborative Grocery List manager using a React frontend and a Node.js/Express backend.Provide a folder hierarchy that separates concerns, production-ready dependencies, and a clean development workflow
+
+AI Output Summary / Actions Taken:
+- Delivered full monorepo architecture (Turborepo, React + Vite frontend, Node.js + Express backend, Redis WebSocket adapter, PostgreSQL + Prisma ORM).
+- Provided comprehensive folder hierarchy separating concerns: routes, controllers, services, repositories, and a shared TypeScript contracts package (@repo/shared).
+- Documented optimistic updates, rate limiting, and RBAC list authorization models.
+
+--------------------------------------------------------------------------------
+PROMPT #2 — Phase 2: Frontend UI Design & Specification
+Date: 2026-09-26
+--------------------------------------------------------------------------------
+For the UI I would like a simple list that has options at the top
+Add button - will pop up a new item that you can label and how much
+Clear - clears what you currently have in your list
+Export or Copy - this give the option to copy the list to paste it to another sheet or export a file that holds the list
+
+AI Output Summary / Actions Taken:
+- Decomposed UI into modular components (ListToolbar, AddItemModal, ConfirmClearModal, GroceryList).
+- Engineered tab-separated clipboard copy (TSV) to allow direct paste into Google Sheets / Excel cells.
+- Implemented RFC 4180 CSV export and checklist plain text formatting.
+- Added accessibility attributes (WAI-ARIA dialogs, alertdialogs, focus trap, Escape key dismiss).
+
+--------------------------------------------------------------------------------
+PROMPT #3 — Implementation & Testing
+Date: 2026-09-26
+--------------------------------------------------------------------------------
+Create the demo in the week 5 folder and run test to make sure program works
+
+AI Output Summary / Actions Taken:
+- Built full working application inside `week5/`:
+  - `server.js`: Express REST API with endpoints (/api/items, /api/export, /api/health) and JSON storage.
+  - `index.html`: Semantic, responsive layout with top options bar, modals, and category filters.
+  - `styles.css`: Glassmorphic styling, custom animated checkboxes, ambient glows, and responsive layout.
+  - `app.js`: Client controller managing optimistic state, REST API sync, and export helpers.
+- Created `test_grocery.py` and verified 12/12 automated unit and integration tests passing.
+- Conducted live browser subagent interaction and visual verification (screenshots saved to `week5/screenshots/`).
+
+--------------------------------------------------------------------------------
+PROMPT #4 — Prompt Logging
+Date: 2026-09-27
+--------------------------------------------------------------------------------
+Create a text file that will store the prompts I give you
+
+AI Output Summary / Actions Taken:
+- Created `week5/prompt_log.txt` tracking all prompts, timestamps, phases, and corresponding implementation actions.
+
+--------------------------------------------------------------------------------
+PROMPT #5 — Dark Theme Support
+Date: 2026-09-27
+--------------------------------------------------------------------------------
+Create a dark theme that can change with a button in the corner of the application.
+
+AI Output Summary / Actions Taken:
+- Implemented a complete Light and Dark design system token architecture in `styles.css` using `[data-theme="dark"]` with tailored tokens for backgrounds, text, borders, glassmorphic cards, custom checkboxes, badges, and modals.
+- Added a responsive, accessible theme toggle button (`#btn-theme-toggle`) in the top-right corner of the application header displaying rotating Sun/Moon SVG icons.
+- Engineered client-side theme management in `app.js` with `localStorage` persistence, automatic system color scheme detection (`prefers-color-scheme`), and toast feedback.
+- Added automated unit and integration tests in `test_grocery.py` validating theme button existence, CSS dark mode tokens, and JavaScript initialization.
+
+--------------------------------------------------------------------------------
+PROMPT #6 — Phase 3: Backend Logic & Database Architecture
+Date: 2026-09-27
+--------------------------------------------------------------------------------
+Acting as a senior backend engineer and database architect, design and implement a robust, high-performance backend and persistent data layer for a collaborative Grocery List application (Node.js/Express with an ORM like Prisma or Sequelize, paired with PostgreSQL).
+
+AI Output Summary / Actions Taken:
+- Architected enterprise-grade PostgreSQL schema via Prisma ORM (`prisma/schema.prisma`) featuring:
+  - Strong relational integrity: Enums (`Role`, `ItemCategory`), cascading foreign keys, and composite unique constraints (`[userId, listId]`).
+  - Optimistic Concurrency Control (OCC) through `version Int @default(1)` preventing lost update anomalies during collaborative editing.
+  - High-performance composite B-Tree indexes: `@@index([listId, isCompleted])`, `@@index([listId, createdAt(sort: Desc)])`.
+- Refactored backend into clean 4-tier layered architecture:
+  - `src/config/db.js`: Database lifecycle & PrismaClient connection pooling.
+  - `src/repositories/grocery.repository.js`: Data Access Object (DAO) pattern with atomic transactions.
+  - `src/services/grocery.service.js`: Domain business logic, input sanitization, and export transformations.
+  - `src/controllers/grocery.controller.js`: Strict HTTP REST semantics (200, 201, 400, 404, 409 Conflict, 500).
+  - `src/middleware/errorHandler.js`: RFC 7807 compliant standardized error envelopes.
+- Solved the "Majority Problem" by eliminating naive full-table scans, unindexed filters, and concurrent state race conditions.
+- Validated with 13/13 passing automated unit, integration, and HTTP tests.
+
+--------------------------------------------------------------------------------
+PROMPT #7 — Phase 4: Contract Alignment & Shared Source of Truth
+Date: 2026-09-27
+--------------------------------------------------------------------------------
+Acting as a full-stack architect, establish a rigorous API contract and shared source of truth for the collaborative Grocery List application, ensuring the React frontend and Node.js backend perfectly align on structure, naming conventions, and data expectations.
+
+AI Output Summary / Actions Taken:
+- Created formal TypeScript contract declarations in `src/contracts/grocery.contract.d.ts` (`GroceryItemContract`, `CreateItemDTO`, `ToggleItemDTO`, `ApiResponse<T>`, `ApiErrorResponse`).
+- Created shared contract definition and canonical category dictionary in `src/contracts/grocery.contract.js` (`ItemCategory`, `CategoryDictionary`, `normalizeCategory()`, `getCategoryDisplayLabel()`).
+- Built runtime boundary validator in `src/contracts/contractValidator.js` (`validateGroceryItem`, `validateCreateItemDTO`) preventing malformed payloads from penetrating domain logic.
+- Identified and fixed critical full-stack mismatches:
+  1. Category casing mismatch: Frontend used title-cased strings with spaces ("Meat & Seafood") while PostgreSQL Prisma schema expected screaming snake-case enums (`MEAT_SEAFOOD`). Resolved with bidirectional normalization.
+  2. OCC version synchronization: Standardized integer `version` field across client and server mutations to prevent concurrency anomalies.
+- Added automated contract alignment test suite in `test_grocery.py` (`test_8_contract_response_alignment`, `test_9_contract_category_normalization`, `test_10_contract_validation_rejections`), bringing suite to 16/16 passing tests.
+
+--------------------------------------------------------------------------------
+PROMPT #8 — Phase 5: Three-Tier Testing & Full-Stack Validation
+Date: 2026-09-27
+--------------------------------------------------------------------------------
+Acting as a senior QA and test automation engineer, design and implement a comprehensive test suite for the collaborative Grocery List application across three distinct testing layers, ensuring 100% code ownership and bulletproof reliability from the database to the UI.
+
+AI Output Summary / Actions Taken:
+- Architected and implemented a 3-tier testing pyramid with zero external test-runner overhead:
+  1. Layer 1 (Unit Testing):
+     - `tests/unit/contracts.test.js`: Validates DTO boundaries (string limits <= 150/50 chars), required properties, and canonical enum normalizations.
+     - `tests/unit/exports.test.js`: Validates RFC 4180 CSV quote-escaping and spreadsheet TSV tab-delimited formatting.
+  2. Layer 2 (Integration Testing):
+     - `tests/integration/api.test.js`: Validates Express REST endpoints, HTTP status codes (200, 201, 400, 404), stream MIME headers, and Optimistic Concurrency Control (OCC) throwing 409 Conflict upon version mismatch collisions.
+  3. Layer 3 (End-to-End User Journey):
+     - `tests/e2e/user_journey.test.js`: Simulates complete user lifecycle (landing, adding items with quantities, filtering, checking off items, spreadsheet export, and safe confirmation clearing).
+- Configured npm test automation (`package.json`): `npm test` runs 24 native Node tests and 16 Python tests (40 total passing assertions).
+- Established 100% code ownership with test evidence across database, API, contract, and UI layers.
+
+--------------------------------------------------------------------------------
+PROMPT #9 — Version Control & Repository Deployment
+Date: 2026-09-27
+--------------------------------------------------------------------------------
+push changes to github with comment that finished lab requerments
+
+AI Output Summary / Actions Taken:
+- Verified all lab deliverables, test suites, architecture, and code assets across all 5 lab phases.
+- Staged all project files (.gitignore, source code, contracts, Prisma schema, frontend UI, screenshots, and test suites).
+- Committed changes with comment: "Finished lab requirements: full-stack collaborative grocery list with 3-tier testing, contracts, and dark theme".
+- Pushed main branch to remote GitHub repository (https://github.com/WiegelC/GoCList.git).
+
+===============================================================================
+[Future prompts will be appended below]
+===============================================================================

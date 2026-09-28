@@ -1,0 +1,30 @@
+{
+  "name": "collaborative-grocery-list",
+  "version": "1.0.0",
+  "description": "Full-stack collaborative grocery list manager with real-time sync, spreadsheet export, and clean separation of concerns.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test --test-concurrency=1 tests/**/*.test.js && python3 test_grocery.py",
+    "test:unit": "node --test tests/unit/*.test.js",
+    "test:integration": "node --test tests/integration/*.test.js",
+    "test:e2e": "node --test tests/e2e/*.test.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.10.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0"
+  },
+  "keywords": [
+    "grocery-list",
+    "full-stack",
+    "express",
+    "collaboration"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "prisma": "^8.0.0-rc.17"
+  }
+}

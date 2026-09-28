@@ -1,0 +1,56 @@
+[
+  {
+    "id": "item-101",
+    "name": "Honeycrisp Apples",
+    "quantity": "2 lbs",
+    "category": "PRODUCE",
+    "isCompleted": false,
+    "version": 1,
+    "createdAt": "2026-09-28T04:00:00.000Z"
+  },
+  {
+    "id": "item-102",
+    "name": "Organic Oat Milk",
+    "quantity": "1 carton (64 oz)",
+    "category": "DAIRY",
+    "isCompleted": false,
+    "version": 1,
+    "createdAt": "2026-09-28T04:01:00.000Z"
+  },
+  {
+    "id": "item-103",
+    "name": "Artisan Sourdough",
+    "quantity": "1 loaf",
+    "category": "BAKERY",
+    "isCompleted": true,
+    "version": 2,
+    "createdAt": "2026-09-28T04:02:00.000Z"
+  },
+  {
+    "id": "item-104",
+    "name": "Atlantic Salmon",
+    "quantity": "2 fillets",
+    "category": "MEAT_SEAFOOD",
+    "isCompleted": false,
+    "version": 1,
+    "createdAt": "2026-09-28T04:03:00.000Z"
+  },
+  {
+    "id": "item-105",
+    "name": "Cold Brew Concentrate",
+    "quantity": "32 oz bottle",
+    "category": "BEVERAGES",
+    "isCompleted": false,
+    "version": 1,
+    "createdAt": "2026-09-28T04:04:00.000Z"
+  },
+  {
+    "id": "item-106",
+    "name": "Hass Avocados",
+    "quantity": "4 count",
+    "category": "PRODUCE",
+    "isCompleted": true,
+    "version": 2,
+    "createdAt": "2026-09-28T04:05:00.000Z"
+  }
+]

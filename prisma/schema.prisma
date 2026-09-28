@@ -1,0 +1,103 @@
+// ==============================================================================
+// Prisma Schema — Production PostgreSQL Data Layer for Collaborative Grocery List
+// ==============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum ItemCategory {
+  PRODUCE
+  DAIRY
+  BAKERY
+  BEVERAGES
+  PANTRY
+  MEAT_SEAFOOD
+  FROZEN
+  OTHER
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  memberships  ListMember[]
+  createdItems GroceryItem[]
+
+  @@map("users")
+}
+
+model GroceryList {
+  id          String        @id @default(uuid())
+  title       String        @db.VarChar(120)
+  description String?       @db.VarChar(500)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  members     ListMember[]
+  items       GroceryItem[]
+
+  @@index([createdAt(sort: Desc)])
+  @@map("grocery_lists")
+}
+
+model ListMember {
+  id       String      @id @default(uuid())
+  role     Role        @default(EDITOR)
+  userId   String
+  listId   String
+  joinedAt DateTime    @default(now())
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list     GroceryList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listId])
+  @@index([userId])
+  @@index([listId])
+  @@map("list_members")
+}
+
+model GroceryItem {
+  id          String        @id @default(uuid())
+  listId      String
+  name        String        @db.VarChar(150)
+  quantity    String        @db.VarChar(50) // e.g. "2 cartons", "1.5 lbs"
+  category    ItemCategory  @default(OTHER)
+  isCompleted Boolean       @default(false)
+  completedAt DateTime?
+  
+  // Optimistic Concurrency Control (OCC)
+  // Incremented on each update to prevent lost updates in multi-user sessions
+  version     Int           @default(1)
+
+  createdById String?
+  createdBy   User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  list        GroceryList   @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Composite indexes tailored for primary query patterns:
+  // 1. Fetching incomplete / completed items for a specific list
+  @@index([listId, isCompleted])
+  // 2. Fetching recent additions for feed synchronization
+  @@index([listId, createdAt(sort: Desc)])
+  // 3. Category grouping & stats aggregation
+  @@index([listId, category])
+  @@map("grocery_items")
+}
